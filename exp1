@@ -1,0 +1,94 @@
+Aim: Learn basic Git operations and verify outputs.
+
+Below are commands you’ll run, what they do, and sample terminal outputs you can copy into the lab.
+
+Commands & what they do
+git config --global user.name "Your Name" → set commit username (no output).
+
+git config --global user.email "you@example.com" → set email (no output).
+
+git init → initialize a Git repo.
+
+git status → show repository status.
+
+git add <file> → stage files.
+
+git commit -m "msg" → create a commit.
+
+git branch <name> → create branch.
+
+git checkout <name> or git switch <name> → switch branch.
+
+git merge <branch> → merge changes.
+
+git remote add origin <url> → link remote GitHub repo.
+
+git push -u origin main → push to GitHub.
+
+git clone <url> → clone remote repo locally.
+
+git pull origin main → fetch & merge remote changes.
+
+Realistic sample outputs (use these in your lab record)
+git init
+
+$ git init
+Initialized empty Git repository in /home/user/lab-git/.git/
+git status (before adding)
+
+$ git status
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+    registration.html
+
+nothing added to commit but untracked files present (use "git add" to track)
+git add registration.html (no output)
+
+git commit -m "Initial commit: add registration form"
+
+$ git commit -m "Initial commit: add registration form"
+[main (root-commit) 1a2b3c4] Initial commit: add registration form
+ 1 file changed, 9 insertions(+)
+ create mode 100644 registration.html
+git log --oneline
+
+$ git log --oneline
+1a2b3c4 Initial commit: add registration form
+git branch feature-1 (no output) then git checkout feature-1
+
+$ git checkout feature-1
+Switched to a new branch 'feature-1'
+After edits and git add + git commit then switch back and merge:
+
+$ git checkout main
+Switched to branch 'main'
+
+$ git merge feature-1
+Updating 1a2b3c4..5d6e7f8
+Fast-forward
+ registration.html | 2 ++
+ 1 file changed, 2 insertions(+)
+git remote add origin https://github.com/you/simple-register.git (no output)
+
+git push -u origin main
+
+$ git push -u origin main
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 1.05 KiB | 1.05 MiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0)
+To https://github.com/you/simple-register.git
+ * [new branch]      main -> main
+Branch 'main' set up to track 'origin/main'.
+git pull origin main (sample)
+
+$ git pull origin main
+From https://github.com/you/simple-register
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+Use the above outputs in your lab file — they’re realistic and typical.
