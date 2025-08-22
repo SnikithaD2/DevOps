@@ -1,0 +1,80 @@
+Experiment 6 – Explore Docker Commands for Content Management
+Aim:
+To understand how Docker can be used to manage and serve content (like a simple website or files) using containers.
+
+Concept (short explanation):
+Docker is a containerization platform.
+
+An image = blueprint/template (e.g., Nginx web server).
+
+A container = running instance of that image.
+
+Using Docker, we can run a web server and serve our own HTML content inside a container.
+
+Content management in Docker means we can:
+
+Store content inside an image, OR
+
+Mount content dynamically into a running container.
+
+Step-by-Step Procedure
+1. Create your content
+mkdir web-content && cd web-content
+echo "<h1>Hello from Docker!</h1>" > index.html
+This creates a simple HTML file.
+
+2. Run an Nginx container to serve your file
+docker pull nginx
+docker run -d --name mynginx -p 8080:80 -v "$PWD":/usr/share/nginx/html nginx
+-d → run in background
+
+--name mynginx → name container
+
+-p 8080:80 → map local port 8080 → container port 80
+
+-v "$PWD":/usr/share/nginx/html → mount your folder into Nginx web directory
+
+👉 Now open a browser: http://localhost:8080 → you’ll see “Hello from Docker!”
+
+3. Update content without restarting container
+echo "<h1>Updated Content in Docker!</h1>" > index.html
+Refresh the browser → updated content appears immediately.
+✅ This demonstrates how Docker can manage and serve changing content.
+
+4. Useful Docker content management commands
+Command	Action
+docker ps	Show running containers
+docker logs mynginx	Show logs of the container
+docker exec -it mynginx sh	Open shell inside container
+docker stop mynginx	Stop the container
+docker rm mynginx	Remove the container
+docker images	List images
+docker rmi <image>	Remove image
+5. (Optional) Build your own image with content
+Create a Dockerfile:
+
+FROM nginx:alpine
+COPY . /usr/share/nginx/html
+Build and run:
+
+docker build -t myweb:1.0 .
+docker run -d -p 8080:80 myweb:1.0
+Now your content is packaged inside an image → portable and sharable.
+
+6. (Optional) Deploy to Docker Hub
+docker login
+docker tag myweb:1.0 yourdockerhubusername/myweb:1.0
+docker push yourdockerhubusername/myweb:1.0
+Anyone can now pull and run your container.
+
+Explanation (in exam-friendly words):
+Docker helps us package applications with all their dependencies.
+
+For content management, we can use web server images (like Nginx/Apache) and mount our content.
+
+This way, content is isolated, portable, and easy to update.
+
+We can either mount local content dynamically (good for development) or bake content into an image (good for deployment).
+
+Docker commands like docker run, docker build, docker push, and docker pull make content deployment and management consistent across systems.
+
