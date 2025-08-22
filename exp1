@@ -1,94 +1,216 @@
-Aim: Learn basic Git operations and verify outputs.
+Database 
+CREATE DATABASE event_db;
 
-Below are commands you’ll run, what they do, and sample terminal outputs you can copy into the lab.
+USE event_db;
 
-Commands & what they do
-git config --global user.name "Your Name" → set commit username (no output).
+CREATE TABLE registrations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  phone VARCHAR(20) NOT NULL,
+  event VARCHAR(100) NOT NULL,
+  registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+select * from registrations;
 
-git config --global user.email "you@example.com" → set email (no output).
+Server.js
+const express = require('express');
+const mysql = require('mysql2');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 
-git init → initialize a Git repo.
+const app = express();
+const port = 3000;
 
-git status → show repository status.
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static('public')); // serve static files like HTML/CSS if needed
 
-git add <file> → stage files.
+// MySQL connection config — replace with your MySQL credentials
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '1234',
+  database: 'event_db',
+});
 
-git commit -m "msg" → create a commit.
+db.connect(err => {
+  if (err) {
+    console.error('Database connection error:', err);
+    process.exit(1);
+  }
+  console.log('Connected to MySQL database.');
+});
 
-git branch <name> → create branch.
+// Registration endpoint
+app.post('/register', (req, res) => {
+  const { name, email, phone, event } = req.body;
 
-git checkout <name> or git switch <name> → switch branch.
+  if (!name || !email || !phone || !event) {
+    return res.status(400).json({ error: 'All fields are required.' });
+  }
 
-git merge <branch> → merge changes.
+  const sql = 'INSERT INTO registrations (name, email, phone, event) VALUES (?, ?, ?, ?)';
 
-git remote add origin <url> → link remote GitHub repo.
+  db.query(sql, [name, email, phone, event], (err, results) => {
+    if (err) {
+      if (err.code === 'ER_DUP_ENTRY') {
+        return res.status(400).json({ error: 'Email already registered.' });
+      }
+      console.error('DB error:', err);
+      return res.status(500).json({ error: 'Database error.' });
+    }
+    res.json({ message: 'Registration successful!' });
+  });
+});
 
-git push -u origin main → push to GitHub.
+// Start server
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
 
-git clone <url> → clone remote repo locally.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Registration</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <form id="registrationForm">
+      <h2>Register for Event</h2>
 
-git pull origin main → fetch & merge remote changes.
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" required />
 
-Realistic sample outputs (use these in your lab record)
-git init
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required />
 
-$ git init
-Initialized empty Git repository in /home/user/lab-git/.git/
-git status (before adding)
+      <label for="phone">Phone Number</label>
+      <input id="phone" name="phone" type="tel" pattern="[0-9]{10}" placeholder="10-digit number" required />
 
-$ git status
-On branch main
+      <label for="event">Event</label>
+      <select id="event" name="event" required>
+        <option value="">-- Select an Event --</option>
+        <option value="Workshop">Workshop</option>
+        <option value="Seminar">Seminar</option>
+        <option value="Networking">Networking</option>
+        <option value="Hackathon">Hackathon</option>
+      </select>
 
-No commits yet
+      <button type="submit">Register</button>
 
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-    registration.html
+      <p id="message" class="message"></p>
+    </form>
+  </div>
 
-nothing added to commit but untracked files present (use "git add" to track)
-git add registration.html (no output)
+  <script>
+    const form = document.getElementById('registrationForm');
+    const messageEl = document.getElementById('message');
 
-git commit -m "Initial commit: add registration form"
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-$ git commit -m "Initial commit: add registration form"
-[main (root-commit) 1a2b3c4] Initial commit: add registration form
- 1 file changed, 9 insertions(+)
- create mode 100644 registration.html
-git log --oneline
+      const formData = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        phone: form.phone.value.trim(),
+        event: form.event.value
+      };
 
-$ git log --oneline
-1a2b3c4 Initial commit: add registration form
-git branch feature-1 (no output) then git checkout feature-1
+      try {
+        const response = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
 
-$ git checkout feature-1
-Switched to a new branch 'feature-1'
-After edits and git add + git commit then switch back and merge:
+        const data = await response.json();
 
-$ git checkout main
-Switched to branch 'main'
+        if (response.ok) {
+          messageEl.style.color = 'green';
+          messageEl.textContent = data.message;
+          form.reset();
+        } else {
+          messageEl.style.color = 'red';
+          messageEl.textContent = data.error || 'Registration failed.';
+        }
+      } catch (error) {
+        messageEl.style.color = 'red';
+        messageEl.textContent = 'Server error. Please try again later.';
+      }
+    });
+  </script>
+</body>
+</html>
 
-$ git merge feature-1
-Updating 1a2b3c4..5d6e7f8
-Fast-forward
- registration.html | 2 ++
- 1 file changed, 2 insertions(+)
-git remote add origin https://github.com/you/simple-register.git (no output)
+/* styles.css */
 
-git push -u origin main
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-$ git push -u origin main
-Enumerating objects: 5, done.
-Counting objects: 100% (5/5), done.
-Compressing objects: 100% (3/3), done.
-Writing objects: 100% (3/3), 1.05 KiB | 1.05 MiB/s, done.
-Total 3 (delta 0), reused 0 (delta 0)
-To https://github.com/you/simple-register.git
- * [new branch]      main -> main
-Branch 'main' set up to track 'origin/main'.
-git pull origin main (sample)
+.container {
+  background-color: white;
+  padding: 25px 30px;
+  border-radius: 8px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+  width: 320px;
+}
 
-$ git pull origin main
-From https://github.com/you/simple-register
- * branch            main       -> FETCH_HEAD
-Already up to date.
-Use the above outputs in your lab file — they’re realistic and typical.
+form h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin: 12px 0 6px;
+  font-weight: bold;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+input:focus, select:focus {
+  border-color: #007BFF;
+  outline: none;
+}
+
+button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px 0;
+  background-color: #007BFF;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.message {
+  margin-top: 15px;
+  font-weight: bold;
+  text-align: center;
+}
