@@ -1,0 +1,43 @@
+3) Experiment 3 — Practice Source Code Management on GitHub (step-by-step + deploy)
+Aim: Put your Program 1 code under Git version control, push to GitHub, create branch, create PR, merge.
+
+Step-by-step (commands + UI steps):
+
+Prepare local folder
+
+cd path/to/your/project   # folder with registration.html
+echo "# simple-register" > README.md
+git init
+git add .
+git commit -m "Initial commit: registration form"
+Create repo on GitHub
+
+Go to https://github.com → New → name simple-register → Create.
+
+Link and push
+
+git branch -M main
+git remote add origin https://github.com/<your-username>/simple-register.git
+git push -u origin main
+Output looks like the git push sample in Experiment 2.
+
+Create feature branch, make changes locally
+
+git checkout -b add-college
+# edit registration.html (add <input placeholder="College">)
+git add registration.html
+git commit -m "Add College field"
+git push -u origin add-college
+Open Pull Request
+
+On GitHub repo page → Compare & pull request → give title → Create pull request → Review → Merge.
+
+Merge & sync
+
+After merging, locally:
+
+git checkout main
+git pull origin main
+How to deploy front-end HTML on GitHub Pages (quick):
+
+On GitHub → Settings → Pages → Source: main / root → Save → open https://<you>.github.io/simple-register/.
