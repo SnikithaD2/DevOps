@@ -1,0 +1,72 @@
+4) Experiment 4 — Jenkins Installation & Connect to GitHub (step-by-step)
+Aim: Install Jenkins, unlock, add plugins, and connect a pipeline to a GitHub repo.
+
+Below uses Ubuntu/Debian commands; Windows steps are via installer GUI.
+
+Steps (Ubuntu example):
+
+Install Java
+
+sudo apt update
+sudo apt install openjdk-11-jdk -y
+java -version
+Install Jenkins
+
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/ | \
+  sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt update
+sudo apt install jenkins -y
+Start & confirm
+
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
+sudo systemctl status jenkins
+Visit http://localhost:8080 in browser.
+
+Unlock Jenkins
+
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+Paste into web UI → Install suggested plugins → create admin user.
+
+Install Git & Pipeline plugins (if not auto-installed):
+
+Manage Jenkins → Manage Plugins → Available → search Git, Pipeline → Install.
+
+Create Jenkins credentials (for GitHub)
+
+Manage Jenkins → Credentials → System → Global → Add Credentials.
+
+Kind: Username with password (or use Personal access token as password)
+
+ID/name: e.g., github-creds.
+
+Create new Pipeline job
+
+New Item → my-pipeline → Pipeline → OK.
+
+Under Pipeline section:
+
+Definition: Pipeline script from SCM
+
+SCM: Git
+
+Repository URL: https://github.com/<you>/simple-register.git
+
+Credentials: select github-creds
+
+Branch Specifier: */main
+
+Script Path: Jenkinsfile (create this in your repo; see Experiment 5)
+
+Save.
+
+(Optional) Add a GitHub webhook for push-trigger:
+
+On GitHub repo → Settings → Webhooks → Add webhook → Payload URL: http://<jenkins-host>:8080/github-webhook/ → Content type application/json → Add.
+
+How code flows:
+
+Developer pushes code to GitHub → Webhook notifies Jenkins → Jenkins pulls repo → executes Jenkinsfile pipeline → Build/Test/Deploy.
