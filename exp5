@@ -1,0 +1,53 @@
+5) Experiment 5 — CI/CD with Jenkins (Jenkinsfile + step-by-step + how to push)
+Aim: Use Jenkinsfile in GitHub to run CI pipeline for build → test → deploy.
+
+Make sure: Jenkins job is configured to use your repo (see Experiment 4).
+
+Create Jenkinsfile (sample) and add to repo root:
+
+pipeline {
+  agent any
+  environment {
+    DOCKERHUB = 'yourdockerhubusername'
+    IMAGE = "${DOCKERHUB}/user-service:latest"
+  }
+  stages {
+    stage('Checkout') {
+      steps { git url: 'https://github.com/<you>/simple-register.git', branch: 'main' }
+    }
+    stage('Build') {
+      steps { echo 'No compile for static site — or build steps for app here' }
+    }
+    stage('Test') {
+      steps { echo 'Run tests if any (e.g., pytest)' }
+    }
+    stage('Docker Build & Push') {
+      when { expression { return fileExists('Dockerfile') } }
+      steps {
+        sh 'docker build -t $IMAGE .'
+        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin'
+        sh 'docker push $IMAGE'
+      }
+    }
+    stage('Deploy') {
+      steps { echo 'Deploy stage: run container or ssh to server and deploy' }
+    }
+  }
+}
+Steps to push Jenkinsfile to GitHub (deploy code to GitHub so Jenkins can use it):
+
+In your project folder:
+
+git add Jenkinsfile
+git commit -m "Add Jenkinsfile pipeline"
+git push origin main
+In Jenkins job configured with the repo, click Build Now. Or let webhook trigger it automatically.
+
+Notes on Secrets:
+
+In Jenkins use Credentials to add DockerHub username/password or GitHub token. In Jenkinsfile you can reference credentials with withCredentials or environment variables set through job configuration.
+
+What Jenkins does when pipeline runs:
+
+Checks out source → runs build/test → optionally builds Docker image → pushes image to Docker Hub → runs deployment script (e.g., SSH to server to run docker run).
+
