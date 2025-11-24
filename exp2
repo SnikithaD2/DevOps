@@ -1,4 +1,5 @@
 2) Experiment 2 — Explore Git & GitHub Commands (+ sample outputs)
+
 Aim: Learn basic Git operations and verify outputs.
 
 Below are commands you’ll run, what they do, and sample terminal outputs you can copy into the lab.
@@ -29,6 +30,7 @@ git push -u origin main → push to GitHub.
 git clone <url> → clone remote repo locally.
 
 git pull origin main → fetch & merge remote changes.
+
 
 Realistic sample outputs (use these in your lab record)
 git init
